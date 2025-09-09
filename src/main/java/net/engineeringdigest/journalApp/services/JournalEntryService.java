@@ -27,6 +27,9 @@ public class JournalEntryService {
         user.getJournalEntries().add(saved);
         userService.saveUser(user);
     }
+    public void saveEntry(JournalEntry journalEntry) {
+        journalEntryRepo.save(journalEntry);
+    }
 
     public List<JournalEntry> getAll() {
         return journalEntryRepo.findAll();
@@ -36,10 +39,15 @@ public class JournalEntryService {
         return journalEntryRepo.findById(id);
     }
 
-    public void deleteById(ObjectId id, String userName) {
+    public void deleteById(ObjectId entryId, String userName) {
+        // 1. Delete entry from journal_entries
+        journalEntryRepo.deleteById(entryId);
+
+        // 2. Remove reference from user (DBref wala)
         User user = userService.findByuserName(userName);
-        user.getJournalEntries().removeIf(x -> x.getId().equals(id));
-        userService.saveUser(user);
-        journalEntryRepo.deleteById(id);
+        if (user != null) {
+            user.getJournalEntries().removeIf(entry -> entry.getId().equals(entryId));
+            userService.saveUser(user); // save updated user without the deleted reference
+        }
     }
 }

@@ -25,6 +25,11 @@ public class JournalEntryControllerV2 {
     @Autowired
     private UserService userService;
 
+    @GetMapping
+    public ResponseEntity<List<JournalEntry>> getAllJournalEntries(){
+        List<JournalEntry> all = journalEntryService.getAll();
+        return all.isEmpty() ? new ResponseEntity<>(HttpStatus.NO_CONTENT) : new ResponseEntity<>(all, HttpStatus.OK);
+    }
     @GetMapping("{userName}")
     public ResponseEntity<List<JournalEntry>> getAllJournalEntriesOfUser(@PathVariable String userName) {
         User user = userService.findByuserName(userName);
@@ -64,14 +69,18 @@ public class JournalEntryControllerV2 {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-//    @PutMapping("id/{id}")
-//    public ResponseEntity<?> updateJournalEntryById(@PathVariable ObjectId id, @RequestBody JournalEntry newEntry) {
-////        return journalEntryService.findById(id).map(old -> {
-////            old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().isEmpty() ? newEntry.getTitle() : old.getTitle());
-////            old.setContent(newEntry.getContent() != null && !newEntry.getContent().isEmpty() ? newEntry.getContent() : old.getContent());
-////            old.setDate(LocalDateTime.now());
-////            journalEntryService.saveEntry(old, );
-////            return new ResponseEntity<>(old, HttpStatus.OK);
-////        }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-//    }
+   @PutMapping("id/{userName}/{id}")
+    public ResponseEntity<?> updateJournalEntryById(@PathVariable ObjectId id,
+                                                    @RequestBody JournalEntry newEntry,
+                                                    @PathVariable String userName
+   ) {
+        JournalEntry old = journalEntryService.findById(id).orElse(null);
+        if(old != null){
+            old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().equals("") ? newEntry.getTitle(): old.getTitle());
+            old.setContent(newEntry.getContent() != null && !newEntry.getContent().equals("") ? newEntry.getContent() : old.getContent());
+            journalEntryService.saveEntry(old);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 }
