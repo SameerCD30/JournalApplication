@@ -73,7 +73,7 @@ public class JournalEntryControllerV2 {
     public ResponseEntity<?> updateJournalEntryById(@PathVariable ObjectId id,
                                                     @RequestBody JournalEntry newEntry,
                                                     @PathVariable String userName
-   ) {
+    ) {
         JournalEntry old = journalEntryService.findById(id).orElse(null);
         if(old != null){
             old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().equals("") ? newEntry.getTitle(): old.getTitle());

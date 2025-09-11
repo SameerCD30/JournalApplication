@@ -6,6 +6,7 @@ import net.engineeringdigest.journalApp.repository.JournalEntryRepo;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,12 +21,20 @@ public class JournalEntryService {
     @Autowired
     private UserService userService;
 
+
+    // eg : if a journal entry is created but...could not be saved to a user due to some error... then it would revert back the post
+    @Transactional // if things fail it will revert back the changes
     public void saveEntry(JournalEntry journalEntry, String userName) {
-        User user = userService.findByuserName(userName);
-        journalEntry.setDate(LocalDateTime.now());
-        JournalEntry saved = journalEntryRepo.save(journalEntry);
-        user.getJournalEntries().add(saved);
-        userService.saveUser(user);
+        try{
+            User user = userService.findByuserName(userName);
+            journalEntry.setDate(LocalDateTime.now());
+            JournalEntry saved = journalEntryRepo.save(journalEntry);
+            user.getJournalEntries().add(saved);
+            userService.saveUser(user);
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while saving the entry",e);
+        }
+
     }
     public void saveEntry(JournalEntry journalEntry) {
         journalEntryRepo.save(journalEntry);
